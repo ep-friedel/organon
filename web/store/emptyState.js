@@ -3,51 +3,51 @@ const day = 3600 * 24 * 1000
 
 export default {
   users: {
-    u1: {
+    u_1: {
       name: 'Florian',
-      id: 'u1',
+      id: 'u_1',
     },
-    u2: {
+    u_2: {
       name: 'Mela',
-      id: 'u2',
+      id: 'u_2',
     },
   },
   app: {
     currentUser: 1,
     isAdmin: true,
-    busy: ['LOAD_POSTS'],
+    busy: [],
   },
-  posts: [],
+  posts: ['e_1', 'n_1', 'e_2'],
   events: {
-    e1: {
-      id: 'e1',
+    e_1: {
+      id: 'e_1',
       type: 'birthday',
       date: today + day * 3,
       name: `Niko`,
-      author: 'u1',
+      author: 'u_1',
       recurring: { interval: 'yearly', times: 0 },
       public: true,
       comments: [
         {
-          author: 'u2',
+          author: 'u_2',
           created: today - day,
           content: 'nur persönlich gratulieren',
         },
       ],
     },
-    e2: {
+    e_2: {
       public: true,
-      id: 'e2',
+      id: 'e_2',
       type: 'event',
       date: today + day * 5,
       created: today - day * 2,
       name: `Niko's Geburtstagsfeier`,
       description: 'Übernachtung geht klar, Schlafsack mitbringen',
-      author: 'u1',
+      author: 'u_1',
       recurring: false,
       comments: [
         {
-          author: 'u2',
+          author: 'u_2',
           created: today - day,
           content: 'Geschenk mitbringen',
         },
@@ -55,23 +55,25 @@ export default {
     },
   },
   notes: {
-    n1: {
-      id: 'n1',
+    n_1: {
+      id: 'n_1',
       updated: today - 10000,
-      author: 'u1',
+      author: 'u_1',
+      type: 'note',
       created: today - day,
-      content: 'Einkaufsliste',
+      name: 'Einkaufsliste',
+      content: 'blah blubb',
       public: true,
       list: [
         {
           checked: false,
           content: 'milch',
-          id: 'le1',
+          id: 'le_1',
         },
         {
           checked: false,
           content: 'butter',
-          id: 'le2',
+          id: 'le_2',
         },
       ],
     },
