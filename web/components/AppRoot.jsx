@@ -1,6 +1,9 @@
 import { Redirect, Route, BrowserRouter as Router, Switch } from 'react-router-dom'
 import { apply_history, connect_serviceworker, convert_postmessage } from 'STORE/actions.js'
 
+import Calendar from './views/Calendar'
+import Dashboard from './views/Dashboard'
+import Notes from './views/Notes'
 import React from 'react'
 import { connect } from 'react-redux'
 import { initServiceWorker } from 'UTILS/serviceWorker.js'
@@ -26,25 +29,14 @@ class App extends React.Component {
     // }
   }
 
-  state = {
-    test: '',
-  }
-
   render() {
     const { instance, user, app } = this.props
     return (
       <Router>
         <Switch>
-          <Route
-            path="/"
-            render={() => (
-              <div>
-                <p>Hallo Welt</p>
-                <div style={{ whiteSpace: 'pre' }}>{this.state.test}</div>
-                <textarea cols="50" rows="20" onChange={evt => this.setState({ test: evt.target.value }, () => console.log(this.state.test))} />
-              </div>
-            )}
-          />
+          <Route path="/calendar" render={() => <Calendar />} />
+          <Route path="/notes" render={() => <Notes />} />
+          <Route path="/" render={() => <Dashboard />} />
         </Switch>
       </Router>
     )
@@ -57,4 +49,7 @@ const mapStateToProps = (state, ownProps) => ({
   instance: state.instance,
 })
 
-export default connect(mapStateToProps, { connect_serviceworker, convert_postmessage, apply_history })(App)
+export default connect(
+  mapStateToProps,
+  { connect_serviceworker, convert_postmessage, apply_history },
+)(App)
