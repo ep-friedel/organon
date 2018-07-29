@@ -1,4 +1,4 @@
-import { Redirect, Route, BrowserRouter as Router, Switch } from 'react-router-dom'
+import { Route, BrowserRouter as Router, Switch } from 'react-router-dom'
 import { apply_history, connect_serviceworker, convert_postmessage } from 'STORE/actions.js'
 
 import Calendar from './views/Calendar'
