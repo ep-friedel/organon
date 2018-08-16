@@ -79,3 +79,59 @@ export const formatTimeShort = date => {
 export const round = (date, duration) => {
   return new Date(Math.round(+date / (+duration * 1000)) * (+duration * 1000))
 }
+
+export const getWeekNumber = focus => {
+  let d = new Date(Date.UTC(focus.getFullYear(), focus.getMonth(), focus.getDate()))
+  let dayNum = d.getUTCDay() || 7
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum)
+  let yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1))
+  return Math.ceil(((d - yearStart) / 86400000 + 1) / 7)
+}
+
+export const daysInMonth = rawDate => {
+  const base = new Date(rawDate)
+  return new Date(base.getFullYear(), base.getMonth() + 1, 0).getDate()
+}
+
+export const time_values = {
+  M: 'M',
+  MONTH: 'MONTH',
+  DAY: 'DAY',
+  D: 'D',
+  YEAR: 'YEAR',
+  Y: 'Y',
+}
+
+export const add = (base, values) =>
+  Object.keys(values).reduce((date, type) => {
+    let value = values[type]
+
+    switch (type) {
+      case time_values.MONTH:
+      case time_values.M:
+        const newMonth = date.getMonth() + value
+        date.setMonth(newMonth % 12)
+        date.setFullYear(date.getFullYear() + Math.floor(newMonth / 12))
+        return date
+
+      case time_values.Y:
+      case time_values.YEAR:
+        date.setFullYear(date.getFullYear() + value)
+        return date
+
+      case time_values.D:
+      case time_values.DAY:
+        let newDay = date.getDate() + value
+        let month_days = daysInMonth(date)
+
+        while (month_days < newDay) {
+          date = add(date, { M: 1 })
+          newDay = newDay - month_days
+          month_days = daysInMonth(date)
+        }
+
+        date.setDate(newDay)
+
+        return date
+    }
+  }, new Date(base))

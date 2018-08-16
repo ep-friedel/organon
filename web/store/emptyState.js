@@ -16,6 +16,7 @@ export default {
     currentUser: 1,
     isAdmin: true,
     busy: [],
+    calendar: {}
   },
   posts: ['e_1', 'n_1', 'e_2'],
   events: {
