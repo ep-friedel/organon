@@ -1,8 +1,8 @@
-const path = require('path'),
-  HtmlWebpackPlugin = require('html-webpack-plugin'),
-  webpack = require('webpack'),
-  ExtractTextPlugin = require('extract-text-webpack-plugin'),
-  ServiceWorkerWebpackPlugin = require('serviceworker-webpack-plugin')
+require('webpack')
+const path = require('path')
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+const ExtractTextPlugin = require('extract-text-webpack-plugin')
+const ServiceWorkerWebpackPlugin = require('serviceworker-webpack-plugin')
 
 module.exports = {
   entry: ['./web/index.js'],
@@ -92,8 +92,10 @@ module.exports = {
       DIALOG: path.resolve('./web/components/dialog'),
       CONNECTED: path.resolve('./web/components/connected'),
       PAGES: path.resolve('./web/components/views'),
+      SVG: path.resolve('./web/components/svg'),
       UTILS: path.resolve('./web/utils'),
       STORE: path.resolve('./web/store'),
+      PROPTYPES: path.resolve('./web/propTypes/'),
       SW: path.resolve('./node_modules/serviceworker-webpack-plugin/lib'),
     },
   },

@@ -1,146 +1,132 @@
 import './BaseStyle.less'
 
-import { add, getWeekNumber } from 'UTILS/date'
+import { MONTH, add } from 'UTILS/date'
+import { expandDays, getDateListByLevel } from 'UTILS/calendar'
+import { setCalenderDetailLevel, setCalenderFocus } from 'STORE/actions/app'
 
-import { Link } from 'react-router-dom'
+import { DayView } from 'RAW/calendar/DayView'
+import { EventListPropType } from 'PROPTYPES/calendar'
+import { Map } from 'immutable'
 import React from 'react'
+import { WeekGrid } from 'RAW/calendar/WeekGrid'
+import { WeekList } from 'RAW/calendar/WeekList'
 import { connect } from 'react-redux'
+import propTypes from 'prop-types'
 import styles from './Calendar.less'
 
-const focusLevels = {
-  WEEK: 'WEEK',
-  MONTH: 'MONTH',
-  YEAR: 'YEAR',
-  DECADE: 'DECADE',
+export const focusLevels = {
+  DETAIL: 'DETAIL',
+  LIST: 'LIST',
+  OVERVIEW: 'OVERVIEW',
 }
 
-export class Calendar extends React.Component {
+export class Calendar extends React.PureComponent {
   constructor(props) {
     super()
 
-    this.state = {
-      focus: props.focus,
-    }
-
-    this.generateWeek = cache(generateWeek)
-    this.generateMonth = cache(generateMonth)
-    this.generateYear = cache(generateYear)
+    this.state = {}
     this.onScroll = this.onScroll.bind(this)
-    //this.generateDecade = cache(generateDecade)
+    this.selectDay = this.selectDay.bind(this)
   }
 
-  dates() {
-    const {
-      state: { focus },
-      props: { level },
-    } = this
-
-    switch (level) {
-      case focusLevels.WEEK:
-        return this.generateWeek(focus)
-      case focusLevels.MONTH:
-        return this.generateMonth(focus)
-      case focusLevels.YEAR:
-        return this.generateYear(focus)
-      case focusLevels.DECADE:
-        return this.generateDecade(focus)
+  static getDerivedStateFromProps({ focus, level, events }) {
+    return {
+      dates: getDateListByLevel(level, focus, events),
     }
   }
 
   render() {
     const {
-      props: { level, focus },
+      state: { dates },
+      props: { setCalenderDetailLevel },
     } = this
 
+    const { year, month } = dates[0]
+
     return (
-      <div className={styles.frame} onWheel={this.onScroll}>
-        {level === focusLevels.WEEK && renderWeek(this.dates(), focus)}
-        {level === focusLevels.MONTH && <div className={styles.month}>{this.dates().map(date => renderWeek(date, focus))}</div>}
+      <div className={styles.frame}>
+        <div className={styles.switch}>
+          <div className={styles.toggle} onClick={() => setCalenderDetailLevel(focusLevels.LIST)}>
+            Listenansicht
+          </div>
+          <div className={styles.toggle} onClick={() => setCalenderDetailLevel(focusLevels.OVERVIEW)}>
+            Monatsansicht
+          </div>
+        </div>
+        <h2 className={styles.header}>{`${year} - ${MONTH[month]}`}</h2>
+        {this.renderCalendar()}
       </div>
     )
   }
 
+  renderCalendar() {
+    const {
+      props: { level, focus },
+      state: { dates },
+      selectDay,
+    } = this
+
+    switch (level) {
+      case focusLevels.LIST:
+        return (
+          <div className={styles.frame} onWheel={this.onScroll}>
+            <WeekList {...{ dates, focus, selectDay }} />
+          </div>
+        )
+      case focusLevels.DETAIL:
+        return <DayView day={dates[0]} />
+      case focusLevels.OVERVIEW:
+        return (
+          <div className={styles.frame} onWheel={this.onScroll}>
+            <WeekGrid {...{ dates, focus, selectDay }} />
+          </div>
+        )
+      default:
+        return null
+    }
+  }
+
+  selectDay(date) {
+    const { setCalenderDetailLevel, setCalenderFocus } = this.props
+
+    setCalenderDetailLevel(focusLevels.DETAIL)
+    setCalenderFocus(date)
+  }
+
   onScroll(evt) {
     const {
-      state: { focus },
-      props: { level },
+      props: { level, setCalenderFocus, focus },
     } = this
 
     const direction = evt.deltaY > 0 ? 1 : -1
 
     evt.preventDefault()
 
-    this.setState({
-      focus: add(focus, {
-        D: direction * (level === focusLevels.WEEK ? 1 : level === focusLevels.MONTH ? 7 : 0),
-        M: direction * (level === focusLevels.YEAR ? 1 : level === focusLevels.DECADE ? 12 : 0),
+    setCalenderFocus(
+      add(focus, {
+        D: direction * (level === focusLevels.OVERVIEW ? 14 : 1),
       }),
-    })
-  }
-}
-
-const renderWeek = ({ days, weeknumber }, originalFocus) => (
-  <div className={styles.week}>
-    <div className={styles.weeknumber}>{weeknumber}</div>
-    {days.map(date => <div className={styles.day + ' ' + (originalFocus === date.getTime() ? styles.today : '')}>{date.getDate()}</div>)}
-  </div>
-)
-
-function generateWeek(focus) {
-  const baseDay = focus.getDay()
-  let days = []
-
-  for (let dayOfWeek = 0; dayOfWeek <= 6; dayOfWeek++) {
-    days.push(add(focus, { D: dayOfWeek - baseDay }))
-  }
-
-  return {
-    weeknumber: getWeekNumber(focus),
-    days,
-  }
-}
-
-function generateMonth(focus) {
-  let month = []
-
-  for (let week = -2; week <= 2; week++) {
-    month.push(generateWeek(add(focus, { D: 7 * week })))
-  }
-
-  return month
-}
-
-function generateYear(focus) {
-  let year = []
-
-  for (let month = -4; month <= 4; month++) {
-    year.push(add(focus, { M: 1 * month }))
-  }
-}
-
-function cache(func) {
-  const cache = {}
-
-  return date => {
-    const base = new Date(date)
-
-    const key = `${base.getFullYear()}_${base.getMonth()}_${base.getDate()}`
-
-    if (!cache[key]) {
-      cache[key] = func(base)
-    }
-    return cache[key]
+    )
   }
 }
 
 Calendar.defaultProps = {
-  level: focusLevels.MONTH,
-  focus: Date.now(),
+  level: focusLevels.OVERVIEW,
+  focus: new Date(),
+  events: new Map(),
+}
+
+Calendar.propTypes = {
+  events: EventListPropType,
+  level: propTypes.oneOf(Object.values(focusLevels)),
+  focus: propTypes.instanceOf(Date),
 }
 
 export default connect(
   store => ({
-    ...store.getIn(['app', 'calendar']).toJS(),
+    focus: store.getIn(['app', 'calendar', 'focus']),
+    level: store.getIn(['app', 'calendar', 'level']),
+    events: store.get('events'),
   }),
-  {},
+  { setCalenderDetailLevel, setCalenderFocus },
 )(Calendar)
